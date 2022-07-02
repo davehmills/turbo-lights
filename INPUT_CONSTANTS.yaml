@@ -4,6 +4,8 @@ ANT:
   SERIAL: '/dev/ttyUSB0'
   # Network key as a HEX code into which USB stick is connected
   NETKEY: 'B9A521FBBD72C345'
+  # Number of LEDs
+  LEDS: 30
 
 # Power zones are constructed for each of the ranges provides as a list
 POWER:
