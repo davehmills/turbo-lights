@@ -7,10 +7,10 @@ import led_control
 test_data_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test_data')
 
 
-class TestYAMLImport(unittest.TestCase):
+class TestYAMLImport_Zones(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.pth_test_file = os.path.join(test_data_folder, 'test_zones.yaml')
+        cls.pth_test_file = os.path.join(test_data_folder, 'test_INPUT_CONSTANTS.yaml')
 
     def test_power_zone_import(self):
         """ Test importing of power zone data """
@@ -34,6 +34,25 @@ class TestYAMLImport(unittest.TestCase):
         """ Tests running correctly if file is missing """
         with self.assertRaises(FileNotFoundError):
             led_control.get_zones(pth_file='Missing file')
+
+
+class TestYAMLImport_ANTConstants(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.pth_test_file = os.path.join(test_data_folder, 'test_INPUT_CONSTANTS.yaml')
+
+    def test_ant_constants(self):
+        """ Test importing of power zone data """
+        ant_constants = led_control.get_ant_constants(pth_file=self.pth_test_file)
+
+        # Confirm some specific attributes
+        self.assertEqual(len(ant_constants), 2)
+        self.assertEqual(ant_constants['SERIAL'], '/dev/ttyUSB0')
+
+    def test_file_missing(self):
+        """ Tests running correctly if file is missing """
+        with self.assertRaises(FileNotFoundError):
+            led_control.get_ant_constants(pth_file='Missing file')
 
 
 if __name__ == '__main__':

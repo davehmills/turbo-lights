@@ -1,4 +1,11 @@
-# Power zones are constructed for the ranges z0 -> z1
+# ANT+ Input Settings
+ANT:
+  # Serial number for ANT+ stick based on the USB port it is registered with
+  SERIAL: '/dev/ttyUSB0'
+  # Network key as a HEX code into which USB stick is connected
+  NETKEY: 'B9A521FBBD72C345'
+
+# Power zones are constructed for each of the ranges provides as a list
 POWER:
   # Zones taken from TrainerRoad based on ftp as shown
   ftp: 281

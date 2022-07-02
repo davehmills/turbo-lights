@@ -1,0 +1,50 @@
+# ANT+ Input Settings
+ANT:
+  # Serial number for ANT+ stick based on the USB port it is registered with
+  SERIAL: '/dev/ttyUSB0'
+  # Network key as a HEX code into which USB stick is connected
+  NETKEY: 'B9A521FBBD72C345'
+
+# Power zones are constructed for each of the ranges provides as a list
+POWER:
+  # Zones taken from TrainerRoad based on ftp as shown
+  ftp: 281
+  zones:
+    # Coasting
+    - 0
+  # Active
+    - 155
+  # Endurance
+    - 214
+  # Tempo
+    - 247
+  # Sweet Spot
+    - 267
+  # Threshold
+    - 298
+  # VO2 Max
+    - 340
+  # Anaerobic
+    - 3000
+
+# Heart Rate Zones
+HEART RATE:
+  # Taken from Training Peaks based on a threshold of 168
+  threshold: 168
+  zones:
+  # Recovery
+    - 0
+  # Aerobic
+    - 141
+  # Tempo
+    - 150
+  # SubThreshold
+    - 158
+  # SuperThreshold
+    - 167
+  # Aerobic Capacity
+    - 172
+  # Anaerobic Capacity
+    - 178
+  # Maximum
+    - 255
