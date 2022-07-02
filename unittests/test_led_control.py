@@ -7,7 +7,7 @@ import led_control
 test_data_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test_data')
 
 
-class TestYAMLImport_Zones(unittest.TestCase):
+class TestYAMLImportZones(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.pth_test_file = os.path.join(test_data_folder, 'test_INPUT_CONSTANTS.yaml')
@@ -36,7 +36,7 @@ class TestYAMLImport_Zones(unittest.TestCase):
             led_control.get_zones(pth_file='Missing file')
 
 
-class TestYAMLImport_ANTConstants(unittest.TestCase):
+class TestYAMLImportANTConstants(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.pth_test_file = os.path.join(test_data_folder, 'test_INPUT_CONSTANTS.yaml')
@@ -53,6 +53,33 @@ class TestYAMLImport_ANTConstants(unittest.TestCase):
         """ Tests running correctly if file is missing """
         with self.assertRaises(FileNotFoundError):
             led_control.get_ant_constants(pth_file='Missing file')
+
+
+class HeartRateColorZones(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.zones_hr = list((0, 141, 150, 158, 167, 172, 178, 255))
+        cls.zones_power = list((0, 155, 214, 247, 267, 298, 340, 3000))
+
+    def test_hr_zone_colormapping(self):
+        """ Test importing of power zone data """
+        test_zones = self.zones_hr
+        zone_colormapping = led_control.get_zone_colormapping(zones=test_zones)
+
+        # Confirm some specific attributes
+        self.assertEqual(len(zone_colormapping), max(test_zones))
+        self.assertEqual(min(zone_colormapping.keys()), min(test_zones))
+        self.assertEqual(max(zone_colormapping.keys()), max(test_zones) - 1)
+
+    def test_power_zone_colormapping(self):
+        """ Test importing of power zone data """
+        test_zones = self.zones_power
+        zone_colormapping = led_control.get_zone_colormapping(zones=test_zones)
+
+        # Confirm some specific attributes
+        self.assertEqual(len(zone_colormapping), max(test_zones))
+        self.assertEqual(min(zone_colormapping.keys()), min(test_zones))
+        self.assertEqual(max(zone_colormapping.keys()), max(test_zones) - 1)
 
 
 if __name__ == '__main__':
