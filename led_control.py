@@ -291,7 +291,6 @@ if __name__ == '__main__':
     # Setup LEDs
     leds = LEDController(ant_settings['LEDS'])
 
-    # TODO: Need to add in something here to determine whether HRM or POWER METER is detected, checking every x seconds
     with ANTDeviceMonitor(
             serial=ant_settings['SERIAL'],
             netkey=ant_settings['NETKEY'],
