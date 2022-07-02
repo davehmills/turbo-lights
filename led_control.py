@@ -5,10 +5,10 @@
 import os
 
 import yaml
-# import sys
-# import time
-# from ant.core import driver, node, event, message, log
-# from ant.core.constants import CHANNEL_TYPE_TWOWAY_RECEIVE, TIMEOUT_NEVER
+import sys
+import time
+from ant.core import driver, node, event, message, log
+from ant.core.constants import CHANNEL_TYPE_TWOWAY_RECEIVE, TIMEOUT_NEVER
 
 # CONSTANTS
 PTH_CONSTANTS_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'INPUT_CONSTANTS.yaml')
