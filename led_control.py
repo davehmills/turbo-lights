@@ -10,6 +10,7 @@
 """
 import datetime as dt
 import os
+# noinspection PyUnresolvedReferences
 from rpi_ws281x import *
 import argparse
 
@@ -32,14 +33,13 @@ PAIRED_COLOR = (
 )
 
 # LED strip configuration:
-LED_COUNT      = 30      # Number of LED pixels.
-LED_PIN        = 18      # GPIO pin connected to the pixels (18 uses PWM!).
-#LED_PIN        = 10      # GPIO pin connected to the pixels (10 uses SPI /dev/spidev0.0).
-LED_FREQ_HZ    = 800000  # LED signal frequency in hertz (usually 800khz)
-LED_DMA        = 10      # DMA channel to use for generating signal (try 10)
+# LED_COUNT      = 30      # Number of LED pixels.
+LED_PIN = 18      # GPIO pin connected to the pixels (18 uses PWM!).
+LED_FREQ_HZ = 800000  # LED signal frequency in hertz (usually 800khz)
+LED_DMA = 10      # DMA channel to use for generating signal (try 10)
 LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
-LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
-LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
+LED_INVERT = False   # True to invert the signal (when using NPN transistor level shift)
+LED_CHANNEL = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
 
 def get_zones(pth_file, power=True):
@@ -79,17 +79,15 @@ def get_ant_constants(pth_file):
     # Netkey
     netkey = file_contents['ANT']['NETKEY']
     # LEDS requires conversion to integer
-    leds = int(file_contents['ANT']['LEDS'])
+    number_leds = int(file_contents['ANT']['LEDS'])
     # time delay requires conversion to int
     time_delay = int(file_contents['ANT']['TIME_DELAY'])
-
-
 
     # Convert to dictionary
     ant_constants = dict()
     ant_constants['SERIAL'] = serial
     ant_constants['NETKEY'] = netkey
-    ant_constants['LEDS'] = leds
+    ant_constants['LEDS'] = number_leds
     ant_constants['TIME_DELAY'] = time_delay
 
     return ant_constants
@@ -145,7 +143,7 @@ class Monitor:
         """
             Initialise the class for managing the heart rate monitor
         :param str serial:  Serial string of ANT_USB stick, provided as external config file
-        :param str netkey:  Hexadecimal number for the ANT stick
+        :param list netkey:  Hexadecimal number for the ANT stick
         :param function led_controller:  Function which device is passed
         :param int time_delay:  Maximum delay to allow before toggling input
         """
@@ -277,11 +275,14 @@ class LEDController:
         # Process arguments
         parser = argparse.ArgumentParser()
         parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
-        args = parser.parse_args()
+        _ = parser.parse_args()
         
         # Create NeoPixel object with appropriate configuration.
-        self.strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
-        # Intialize the library (must be called once before other functions).
+        # noinspection PyUnresolvedReferences
+        self.strip = Adafruit_NeoPixel(
+            number_of_leds, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL
+        )
+        # Initialise the library (must be called once before other functions).
         self.strip.begin()
         
         # Initialise pixels by rotating colors
@@ -299,25 +300,24 @@ class LEDController:
             for x in color:
                 # If set to flash then will set to black and then to the color
                 if flash:
-                    self.colorWipe((0, 0, 0))
+                    self.color_wipe((0, 0, 0))
                 # Set to the requested color
-                self.colorWipe(x)
+                self.color_wipe(x)
 
         else:
             # Flash LEDS if changing sensor
             if flash:
                 for x in range(5):
-                    self.colorWipe(color)
+                    self.color_wipe(color)
             # Finally set the color that LED is supposed to be
-            self.colorWipe(color)
+            self.color_wipe(color)
 
         # Add in 1 second delay here to avoid changing too often
         time.sleep(1)
 
         return None
-    
 
-    def colorWipe(self, color, wait_ms=5):
+    def color_wipe(self, color, wait_ms=5):
         """Wipe color across display a pixel at a time."""
         # Convert to RGB
         color = Color(color[0], color[1], color[2])
@@ -347,8 +347,8 @@ if __name__ == '__main__':
 
     monitor.initialise_channels()
 
-    
-    while True:# Start channels
+    while True:
+        # Start channels
         try:
             # Open the channels
             monitor.channel_power.open()
