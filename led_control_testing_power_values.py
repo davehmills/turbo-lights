@@ -244,6 +244,7 @@ class Monitor:
         #     self.update_led(color=color, flash=True)
         # else:
         #     self.update_led(color=color)
+        return 1
 
     def on_hr_data(self, data):
         """ Function runs whenever power data is received """
