@@ -180,8 +180,8 @@ class Monitor:
         
         self.channel_power = self._setup_channel(power=True)
         print('power_channel_setup')
-        self.channel_hr = self._setup_channel(power=False)
-        print('hr_channel_setup')
+        # self.channel_hr = self._setup_channel(power=False)
+        # print('hr_channel_setup')
 
     def stop(self):
         """ Stop the node"""
@@ -204,7 +204,8 @@ class Monitor:
         :return None:
         """
         # Create new channel set to receive data
-        channel = self.antnode.new_channel(Channel.Type.BIDIRECTIONAL_RECEIVE)
+        # channel = self.antnode.new_channel(Channel.Type.BIDIRECTIONAL_RECEIVE)
+        channel = self.antnode.new_channel(Channel.Type.UNIDIRECTIONAL_RECEIVE_ONLY)
 
         if power:
             channel.on_broadcast_data = self.on_power_data
@@ -356,8 +357,8 @@ if __name__ == '__main__':
         # Open the channels
         monitor.channel_power.open()
         print('power channel_opened')
-        monitor.channel_hr.open()
-        print('hr channel_opened')
+        # monitor.channel_hr.open()
+        # print('hr channel_opened')
 
         while True:
             time.sleep(0.01)
