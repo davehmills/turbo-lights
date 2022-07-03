@@ -178,8 +178,8 @@ class Monitor:
         self.antnode = Node()
         self.antnode.set_network_key(0x00, self.netkey)
         
-        self.channel_power = self._setup_channel(power=True)
-        print('power_channel_setup')
+        # self.channel_power = self._setup_channel(power=True)
+        # print('power_channel_setup')
         self.channel_hr = self._setup_channel(power=False)
         print('hr_channel_setup')
 
@@ -354,8 +354,8 @@ if __name__ == '__main__':
             monitor.antnode.start()
             print('node started')
             # Open the channels
-            monitor.channel_power.open()
-            print('power channel_opened')
+            # monitor.channel_power.open()
+            # print('power channel_opened')
             monitor.channel_hr.open()
             print('hr channel_opened')
 
