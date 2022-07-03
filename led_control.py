@@ -1,6 +1,12 @@
 """
     Script controls the colour of the LED lights based on power or heart rate and bands provided in the relevant
     input files
+
+    Utilised openant which can be retrieved using following:
+        git clone https://github.com/pirower/openant/
+        cd openant
+        sudo python3 setup.py install
+
 """
 import datetime as dt
 import os
@@ -12,8 +18,8 @@ import neopixel
 import yaml
 import sys
 import time
-from ant.core import driver, node, event, message
-from ant.core.constants import CHANNEL_TYPE_TWOWAY_RECEIVE, TIMEOUT_NEVER
+from ant.easy.node import Node
+from ant.easy.channel import Channel
 
 # CONSTANTS
 PTH_CONSTANTS_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'INPUT_CONSTANTS.yaml')
@@ -26,8 +32,6 @@ PAIRED_COLOR = (
     (255, 0, 0),  # Red
     (251, 3, 201)  # Purple
 )
-# Time delay between changing sensors
-TIME_DELAY = 500
 
 
 def get_zones(pth_file, power=True):
@@ -113,19 +117,26 @@ def get_zone_colormapping(zones):
 
 
 # Class for ANT+ data
-class ANTDeviceMonitor(event.EventCallback):
+class Monitor:
     """ Detecting Heart Rate Monitor values """
     colormapping: dict[int, tuple]
     power: bool
     start_time: dt.datetime
+    channel_power: Channel
+    channel_hr: Channel
 
-    def __init__(self, serial, netkey, led_controller):
+    def __init__(self, serial, netkey, led_controller, time_delay):
         """
             Initialise the class for managing the heart rate monitor
         :param str serial:  Serial string of ANT_USB stick, provided as external config file
         :param str netkey:  Hexadecimal number for the ANT stick
         :param function led_controller:  Function which device is passed
+        :param int time_delay:  Maximum delay to allow before toggling input
         """
+        # Set timestamps to zero
+        self.power_last_update = None
+        self.hr_last_update = None
+
         self.serial = serial
         self.netkey = netkey
         self.antnode = None
@@ -133,25 +144,25 @@ class ANTDeviceMonitor(event.EventCallback):
         self.paired = False
         # Function which is called with the new LED colors
         self.update_led = led_controller
+        self.time_delay = time_delay
 
-    def start(self, power=True):
+        # Get the relevant zones and color mapping
+        zones_power = get_zones(pth_file=PTH_CONSTANTS_FILE, power=True)
+        zones_hr = get_zones(pth_file=PTH_CONSTANTS_FILE, power=False)
+        # Get colors for zones
+        self.colormapping_power = get_zone_colormapping(zones=zones_power)
+        self.colormapping_hr = get_zone_colormapping(zones=zones_hr)
+
+    def initialise_channels(self):
         """
             Start the node, listening for heart rate or power meter data
             Starts initially looking for power and switches if nothing detected every x minutes
-        :param bool power:  Whether setting up for a HRM or PowerMeter
         """
-        # Get the relevant zones and color mapping
-        zones = get_zones(pth_file=PTH_CONSTANTS_FILE, power=power)
-        # Get colors for zones
-        self.colormapping = get_zone_colormapping(zones=zones)
-
-        self.power = power
-        self._start_antnode()
-        self._setup_channel()
-        self.channel.registerCallback(self)
-
-        # Store the current time
-        self.start_time = dt.datetime.now()
+        # Initialise node
+        self.antnode = Node()
+        self.antnode.set_network_key(0x00, self.netkey)
+        self.channel_power = self._setup_channel(power=True)
+        self.channel_hr = self._setup_channel(power=False)
 
     def stop(self):
         """ Stop the node"""
@@ -167,85 +178,67 @@ class ANTDeviceMonitor(event.EventCallback):
     def __exit__(self, type_, value, traceback):
         self.stop()
 
-    def _start_antnode(self):
-        stick = driver.USB2Driver(self.serial)
-        self.paired = False
-        self.antnode = node.Node(stick)
-        self.antnode.start()
-
-    def _setup_channel(self):
+    def _setup_channel(self, power=False):
         """
-            Setup the channel
+            Setup the channel for either HR or Power
+        :param bool power:  Set to True for power channel
         :return None:
         """
-        # noinspection PyUnresolvedReferences
-        key = node.NetworkKey('N:ANT+', self.netkey)
-        self.antnode.setNetworkKey(0, key)
-        self.channel = self.antnode.getFreeChannel()
+        # Create new channel set to receive data
+        channel = self.antnode.new_channel(Channel.Type.BIDIRECTIONAL_RECEIVE)
 
-        # Setup channel for power or heart rate
-        if self.power:
-            self.channel.name = 'C:PowerMeter'
-            self.channel.assign('N:ANT+', CHANNEL_TYPE_TWOWAY_RECEIVE)
-            self.channel.setID(11, 0, 0)
-            self.channel.searchTimeout = TIMEOUT_NEVER
-            self.channel.period = 8182  # might be 4091 or 8182
-            self.channel.frequency = 57
+        if power:
+            channel.on_broadcast_data = self.on_power_data
+            channel.on_burst_data = self.on_power_data
+
+            channel.set_period(8182)  # might be 4091 or 8182
+            channel.set_search_timeout(30)
+            channel.set_rf_freq(57)
+            channel.set_id(0, 121, 0)
+
         else:
-            self.channel.name = 'C:HRM'
-            self.channel.assign('N:ANT+', CHANNEL_TYPE_TWOWAY_RECEIVE)
-            self.channel.setID(120, 0, 0)
-            self.channel.searchTimeout = TIMEOUT_NEVER
-            self.channel.period = 8070
-            self.channel.frequency = 57
+            channel.on_broadcast_data = self.on_hr_data
+            channel.on_burst_data = self.on_hr_data
 
-        # Open the channel
-        self.channel.open()
-        self.paired = False
-        return None
+            channel.set_period(8070)
+            channel.set_search_timeout(12)
+            channel.set_rf_freq(57)
+            channel.set_id(0, 120, 0)
 
-    def process(self, msg):
-        """
-            Process data / determine if already connected
-        :param object msg:
-        :return:
-        """
-        if isinstance(msg, message.ChannelBroadcastDataMessage):
-            # Retrieve data
-            if self.power:
-                if msg.payload[1] == 0x10:  # Power Main Data Page
-                    data = msg.payload[8] * 256 + msg.payload[7]
-            else:
-                # Retrieve heart rate data and convert to integer
-                data = ord(msg.payload[-1])
+        return channel
 
-            # Determine the relevant color
-            # noinspection PyUnboundLocalVariable
-            color = self.colormapping[data]
+    def on_power_data(self, data):
+        """ Function runs whenever power data is received """
+        # Get power data and relevant color
+        data_value = int(data[8] * 256 + data[7])
+        color = self.colormapping_power[data_value]
 
-            # Check if has been identified as paired and if not will also flash the LEDS and
-            # toggle the status
-            if self.paired:
-                self.update_led(color=color)
-            else:
-                self.paired = True
+        # Store the time power data was last updated
+        self.power_last_update = dt.datetime.now()
+
+        # Transfer to using power data if not already
+        if not self.power:
+            self.power = True
+            self.update_led(color=color, flash=True)
+        else:
+            self.update_led(color=color)
+
+    def on_hr_data(self, data):
+        """ Function runs whenever power data is received """
+        # Get hr data and transfer to relevant color
+        data_value = int(data[7])
+        color = self.colormapping_hr[data_value]
+
+        # Ser hr update time
+        self.hr_last_update = dt.datetime.now()
+
+        # If power data hasn't been updated in a while, transfer to hr data
+        if self.power:
+            if (self.hr_last_update - self.power_last_update).total_seconds() > self.time_delay:
                 self.update_led(color=color, flash=True)
-
-        elif isinstance(msg, message.ChannelIDMessage):
-            self.paired = True
-            self.update_led(color=PAIRED_COLOR, flash=True)
-
-        return None
-
-    def change_sensor(self):
-        """
-            Toggle to setup looking at the other sensor
-        :return:
-        """
-        # Stop the existing channel listener
-        self.stop()
-        # Start a new listener
-        self.start(power=not self.power)
+                self.power = False
+        else:
+            self.update_led(color=color)
 
 
 class LEDController:
@@ -279,7 +272,17 @@ class LEDController:
                 time.sleep(0.5)
 
         else:
+            # Flash LEDS if changing sensor
+            if flash:
+                for x in range(5):
+                    self.pixels.fill(color)
+                    time.sleep(0.5)
+                    self.pixels.fill((0, 0, 0))
+            # Finally set the color that LED is supposed to be
             self.pixels.fill(color)
+
+        # Add in 1 second delay here to avoid changing too often
+        time.sleep(1)
 
         return None
 
@@ -291,21 +294,24 @@ if __name__ == '__main__':
     # Setup LEDs
     leds = LEDController(ant_settings['LEDS'])
 
-    with ANTDeviceMonitor(
-            serial=ant_settings['SERIAL'],
-            netkey=ant_settings['NETKEY'],
-            led_controller=leds.change_led_color) as device:
+    # Create monitor and establish instance
+    monitor = Monitor(
+        serial=ant_settings['SERIAL'],
+        netkey=ant_settings['NETKEY'],
+        led_controller=leds.change_led_color,
+        time_delay=ant_settings['TIME_DELAY']
+    )
 
-        # Start device
-        device.start()
-        # Set a timer to refresh the heart rate zones every 30 seconds
-        while True:
-            try:
-                time.sleep(1)
-                # Check counter
-                if (dt.datetime.now() - device.start_time).total_seconds() > TIME_DELAY:
-                    print('Toggling Sensor')
-                    device.change_sensor()
+    monitor.initialise_channels()
 
-            except KeyboardInterrupt:
-                sys.exit(0)
+    # Start channels
+    try:
+        # Open the channels
+        monitor.channel_power.open()
+        monitor.channel_hr.open()
+        # Start the node
+        monitor.antnode.start()
+    except KeyboardInterrupt:
+        sys.exit(0)
+    finally:
+        monitor.antnode.stop()
