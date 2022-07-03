@@ -347,9 +347,10 @@ if __name__ == '__main__':
 
     monitor.initialise_channels()
 
-    while True:
+
+    try:
+        while True:
         # Start channels
-        try:
             # Start the node
             monitor.antnode.start()
             print('node started')
@@ -360,8 +361,8 @@ if __name__ == '__main__':
             print('hr channel_opened')
 
             time.sleep(1)
-        except KeyboardInterrupt:
-            sys.exit(0)
-        finally:
-            monitor.antnode.stop()
-            leds.change_led_color(color=(0, 0, 0))
+    except KeyboardInterrupt:
+        sys.exit(0)
+    finally:
+        monitor.antnode.stop()
+        leds.change_led_color(color=(0, 0, 0))
