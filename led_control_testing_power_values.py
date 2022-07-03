@@ -359,7 +359,9 @@ if __name__ == '__main__':
         monitor.channel_hr.open()
         print('hr channel_opened')
 
-        time.sleep(1)
+        while True:
+            time.sleep(1)
+
     except KeyboardInterrupt:
         sys.exit(0)
     finally:
