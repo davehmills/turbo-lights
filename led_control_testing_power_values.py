@@ -348,20 +348,22 @@ if __name__ == '__main__':
     monitor.initialise_channels()
 
     try:
-        while True:
-            # Start channels
-            # Start the node
-            monitor.antnode.start()
-            print('node started')
-            # Open the channels
-            monitor.channel_power.open()
-            print('power channel_opened')
-            monitor.channel_hr.open()
-            print('hr channel_opened')
 
-            time.sleep(1)
+        # Start channels
+        # Start the node
+        monitor.antnode.start()
+        print('node started')
+        # Open the channels
+        monitor.channel_power.open()
+        print('power channel_opened')
+        monitor.channel_hr.open()
+        print('hr channel_opened')
+
+        time.sleep(1)
     except KeyboardInterrupt:
         sys.exit(0)
     finally:
+        print('closing down')
         monitor.antnode.stop()
         leds.change_led_color(color=(0, 0, 0))
+        print('completed')
