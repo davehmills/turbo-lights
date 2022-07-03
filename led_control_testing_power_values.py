@@ -215,7 +215,6 @@ class Monitor:
             channel.set_search_timeout(30)
             channel.set_rf_freq(57)
             channel.set_id(0, 121, 0)
-            channel.set_id(11, 0, 0)
             channel.enable_extended_messages(1)
 
         else:
