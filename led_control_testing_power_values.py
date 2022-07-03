@@ -233,7 +233,7 @@ class Monitor:
         # Get power data and relevant color
         # print('POWER DATA = {}'.format(data))
         # Believe power = number 6
-        print('POWER = {}'.format(data[1][6]))
+        print('POWER = {}'.format(data[6]))
         # print(data)
         # # TODO: Specific numbers to be determined
         # data_value = int(data[7] * 256 + data[6])
