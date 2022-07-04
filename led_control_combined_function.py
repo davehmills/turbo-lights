@@ -306,7 +306,7 @@ class Monitor:
         # # Calculate average
         # average_power = int(sum(self.previous_power_values) / len(self.previous_power_values))
         color = self.colormapping_power[new_power_value]
-        color = Color([color[0], color[1], color[2]])
+        color = Color(color[0], color[1], color[2])
 
         # Store the time power data was last updated
         self.power_last_update = dt.datetime.now()
