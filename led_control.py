@@ -365,19 +365,18 @@ if __name__ == '__main__':
 
     monitor.initialise_channels()
 
-    while True:
-        # Start channels
-        try:
-            # Open the channels
-            monitor.channel_power.open()
-            print('power channel_opened')
-            # monitor.channel_hr.open()
-            # print('hr channel_opened')
-            # Start the node
-            monitor.antnode.start()
-            print('node started')
+    try:
+        # Open the channels
+        monitor.channel_power.open()
+        print('power channel_opened')
+        # monitor.channel_hr.open()
+        # print('hr channel_opened')
+        # Start the node
+        monitor.antnode.start()
+        print('node started')
+        while True:
             time.sleep(1)
-        except KeyboardInterrupt:
-            sys.exit(0)
-        finally:
-            monitor.antnode.stop()
+    except KeyboardInterrupt:
+        sys.exit(0)
+    finally:
+        monitor.antnode.stop()
