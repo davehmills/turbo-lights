@@ -234,6 +234,7 @@ class Monitor:
         # print('POWER DATA = {}'.format(data))
         # Believe power = data[6] but could also be data[4], check accuracy against something else
         print('POWER = {}'.format(data[6]))
+        print(data)
         # Calculate 3 second averaged power
         # print(data)
         # # TODO: Specific numbers to be determined
@@ -254,6 +255,7 @@ class Monitor:
         """ Function runs whenever power data is received """
         # Get hr data and transfer to relevant color
         print('HR Data = {}'.format(data))
+        print(data)
         # print(data)
         
         # data_value = int(data[7])
