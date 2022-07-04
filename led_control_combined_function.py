@@ -296,7 +296,7 @@ class Monitor:
         # Get power data and relevant color
         # Believe power = data[6] but could also be data[4], check accuracy against something else
         new_power_value = data[6]
-        print('POWER = {}'.format(new_power_value))
+        # print('POWER = {}'.format(new_power_value))
 
         # Add to rolling average store
         # Remove last value and add new value to rolling average store
@@ -314,7 +314,7 @@ class Monitor:
         for i in range(self.strip.numPixels()):
             self.strip.setPixelColor(i, color)
             self.strip.show()
-            time.sleep(10 / 1000.0)
+            # time.sleep(10 / 1000.0)
 
         # # Transfer to using power data if not already
         # if not self.power:
