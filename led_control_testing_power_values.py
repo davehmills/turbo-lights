@@ -238,7 +238,7 @@ class Monitor:
         # print(data)
         # # TODO: Specific numbers to be determined
         # data_value = int(data[7] * 256 + data[6])
-        # color = self.colormapping_power[data_value]
+        color = self.colormapping_power[data[6]]
         #
         # # Store the time power data was last updated
         # self.power_last_update = dt.datetime.now()
@@ -246,7 +246,7 @@ class Monitor:
         # # Transfer to using power data if not already
         # if not self.power:
         #     self.power = True
-        #     self.update_led(color=color, flash=True)
+        self.update_led(color=color, flash=True)
         # else:
         #     self.update_led(color=color)
 
