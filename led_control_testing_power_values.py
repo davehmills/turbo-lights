@@ -328,11 +328,9 @@ class LEDController:
         color = Color(color[0], color[1], color[2])
         
         for i in range(self.strip.numPixels()):
-            print(i)
-            print(color)
             self.strip.setPixelColor(i, color)
             self.strip.show()
-            time.sleep(wait_ms/1000.0)
+            # time.sleep(wait_ms/1000.0)
 
 
 if __name__ == '__main__':
