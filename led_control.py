@@ -189,8 +189,8 @@ class Monitor:
         
         self.channel_power = self._setup_channel(power=True)
         print('power_channel_setup')
-        self.channel_hr = self._setup_channel(power=False)
-        print('hr_channel_setup')
+        # self.channel_hr = self._setup_channel(power=False)
+        # print('hr_channel_setup')
 
     def stop(self):
         """ Stop the node"""
@@ -223,6 +223,7 @@ class Monitor:
             channel.set_search_timeout(30)
             channel.set_rf_freq(57)
             channel.set_id(0, 11, 0)
+            channel.enable_extended_messages(1)
 
         else:
             channel.on_broadcast_data = self.on_hr_data
@@ -370,8 +371,8 @@ if __name__ == '__main__':
             # Open the channels
             monitor.channel_power.open()
             print('power channel_opened')
-            monitor.channel_hr.open()
-            print('hr channel_opened')
+            # monitor.channel_hr.open()
+            # print('hr channel_opened')
             # Start the node
             monitor.antnode.start()
             print('node started')
