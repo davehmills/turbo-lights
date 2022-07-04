@@ -232,8 +232,9 @@ class Monitor:
         """ Function runs whenever power data is received """
         # Get power data and relevant color
         # print('POWER DATA = {}'.format(data))
-        # Believe power = number 6
+        # Believe power = data[6] but could also be data[4], check accuracy against something else
         print('POWER = {}'.format(data[6]))
+        # Calculate 3 second averaged power
         # print(data)
         # # TODO: Specific numbers to be determined
         # data_value = int(data[7] * 256 + data[6])

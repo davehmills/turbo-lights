@@ -82,6 +82,8 @@ def get_ant_constants(pth_file):
     number_leds = int(file_contents['ANT']['LEDS'])
     # time delay requires conversion to int
     time_delay = int(file_contents['ANT']['TIME_DELAY'])
+    # Number of seconds to sample power data
+    number_of_seconds = int(file_contents['ANT']['POWER_AVERAGING'])
 
     # Convert to dictionary
     ant_constants = dict()
@@ -89,6 +91,9 @@ def get_ant_constants(pth_file):
     ant_constants['NETKEY'] = netkey
     ant_constants['LEDS'] = number_leds
     ant_constants['TIME_DELAY'] = time_delay
+
+    # TODO: Need to convert this input into number of values based on sampling rate (frequency)
+    ant_constants['NUMBER_POWER_VALUES'] = number_of_seconds
 
     return ant_constants
 
@@ -139,13 +144,14 @@ class Monitor:
     channel_power: Channel
     channel_hr: Channel
 
-    def __init__(self, serial, netkey, led_controller, time_delay):
+    def __init__(self, serial, netkey, led_controller, time_delay, number_measurements_to_average):
         """
             Initialise the class for managing the heart rate monitor
         :param str serial:  Serial string of ANT_USB stick, provided as external config file
         :param list netkey:  Hexadecimal number for the ANT stick
         :param function led_controller:  Function which device is passed
         :param int time_delay:  Maximum delay to allow before toggling input
+        :param int number_measurements_to_average:  Number of individual measurements to average
         """
         # Set timestamps to zero
         self.power_last_update = None
@@ -167,6 +173,9 @@ class Monitor:
         # Get colors for zones
         self.colormapping_power = get_zone_colormapping(zones=zones_power)
         self.colormapping_hr = get_zone_colormapping(zones=zones_hr)
+
+        # Holders for previous power values
+        self.previous_power_values = [0]*number_measurements_to_average
 
     def initialise_channels(self):
         """
@@ -213,7 +222,7 @@ class Monitor:
             channel.set_period(8182)  # might be 4091 or 8182
             channel.set_search_timeout(30)
             channel.set_rf_freq(57)
-            channel.set_id(0, 121, 0)
+            channel.set_id(0, 11, 0)
 
         else:
             channel.on_broadcast_data = self.on_hr_data
@@ -229,11 +238,18 @@ class Monitor:
     def on_power_data(self, data):
         """ Function runs whenever power data is received """
         # Get power data and relevant color
-        print('POWER DATA')
-        print(data)
-        # TODO: Specific numbers to be determined
-        data_value = int(data[7] * 256 + data[6])
-        color = self.colormapping_power[data_value]
+        # Believe power = data[6] but could also be data[4], check accuracy against something else
+        new_power_value = int(data[6])
+        print('POWER = {}'.format(new_power_value))
+
+        # Add to rolling average store
+        # Remove last value and add new value to rolling average store
+        del self.previous_power_values[0]
+        self.previous_power_values.append(new_power_value)
+
+        # Calculate average
+        average_power = int(sum(self.previous_power_values) / len(self.previous_power_values))
+        color = self.colormapping_power[average_power]
 
         # Store the time power data was last updated
         self.power_last_update = dt.datetime.now()
@@ -342,7 +358,8 @@ if __name__ == '__main__':
         serial=ant_settings['SERIAL'],
         netkey=[0xB9, 0xA5, 0x21, 0xFB, 0xBD, 0x72, 0xC3, 0x45],
         led_controller=leds.change_led_color,
-        time_delay=ant_settings['TIME_DELAY']
+        time_delay=ant_settings['TIME_DELAY'],
+        number_measurements_to_average=ant_settings['NUMBER_POWER_VALUES']
     )
 
     monitor.initialise_channels()
