@@ -240,17 +240,17 @@ class Monitor:
         """ Function runs whenever power data is received """
         # Get power data and relevant color
         # Believe power = data[6] but could also be data[4], check accuracy against something else
-        new_power_value = int(data[6])
+        new_power_value = data[6]
         print('POWER = {}'.format(new_power_value))
 
         # Add to rolling average store
         # Remove last value and add new value to rolling average store
-        del self.previous_power_values[0]
-        self.previous_power_values.append(new_power_value)
-
-        # Calculate average
-        average_power = int(sum(self.previous_power_values) / len(self.previous_power_values))
-        color = self.colormapping_power[average_power]
+        # del self.previous_power_values[0]
+        # self.previous_power_values.append(new_power_value)
+        #
+        # # Calculate average
+        # average_power = int(sum(self.previous_power_values) / len(self.previous_power_values))
+        color = self.colormapping_power[new_power_value]
 
         # Store the time power data was last updated
         self.power_last_update = dt.datetime.now()
