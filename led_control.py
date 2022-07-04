@@ -340,8 +340,6 @@ class LEDController:
         color = Color(color[0], color[1], color[2])
         
         for i in range(self.strip.numPixels()):
-            print(i)
-            print(color)
             self.strip.setPixelColor(i, color)
             self.strip.show()
             time.sleep(wait_ms/1000.0)
@@ -375,7 +373,7 @@ if __name__ == '__main__':
         monitor.antnode.start()
         print('node started')
         while True:
-            time.sleep(1)
+            time.sleep(0.01)
     except KeyboardInterrupt:
         sys.exit(0)
     finally:
