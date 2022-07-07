@@ -272,9 +272,7 @@ class Monitor:
             if new_color != self.previous_color_value:
                 self.previous_color_value = new_color
                 self.update_led(color=new_color)
-                print('color change')
 
-            if self.counter == len(self.previous_power_values):
                 time_between_averages = (dt.datetime.now() - self.time_counter).total_seconds()
                 self.time_counter = dt.datetime.now()
                 print('Average power after {} measurements = {} and took {} seconds'.format(
