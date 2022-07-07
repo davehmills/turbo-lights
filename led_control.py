@@ -143,6 +143,7 @@ class Monitor:
     start_time: dt.datetime
     channel_power: Channel
     channel_hr: Channel
+    time_counter: dt.datetime
 
     def __init__(self, serial, netkey, led_controller, time_delay, number_measurements_to_average):
         """
@@ -166,6 +167,11 @@ class Monitor:
         self.update_led = led_controller
         self.time_delay = time_delay
         self.power = True
+
+        # Stores the previous power values and keeps count of the number of power measurements
+        # that have been processed
+        self.previous_color_value = (1000, 1000, 1000)
+        self.counter = 0
 
         # Get the relevant zones and color mapping
         zones_power = get_zones(pth_file=PTH_CONSTANTS_FILE, power=True)
@@ -238,29 +244,43 @@ class Monitor:
 
     def on_power_data(self, data):
         """ Function runs whenever power data is received """
+        # Store the time power data was last updated
+        self.power_last_update = dt.datetime.now()
+        self.counter += 1
+
         # Get power data and relevant color
-        # Believe power = data[6] but could also be data[4], check accuracy against something else
         new_power_value = data[6]
-        print('POWER = {}'.format(new_power_value))
 
         # Add to rolling average store
         # Remove last value and add new value to rolling average store
         # del self.previous_power_values[0]
-        # self.previous_power_values.append(new_power_value)
-        #
-        # # Calculate average
-        # average_power = int(sum(self.previous_power_values) / len(self.previous_power_values))
-        color = self.colormapping_power[new_power_value]
+        self.previous_power_values.append(new_power_value)
 
-        # Store the time power data was last updated
-        self.power_last_update = dt.datetime.now()
+        # # Calculate average
+        average_power = int(sum(self.previous_power_values) / len(self.previous_power_values))
+
+        new_color = self.colormapping_power[average_power]
 
         # Transfer to using power data if not already
         if not self.power:
             self.power = True
-            self.update_led(color=color, flash=True)
+            self.update_led(color=new_color, flash=True)
+            self.previous_color_value = new_color
         else:
-            self.update_led(color=color)
+            # Check whether the color has actually changed and only update the LEDs
+            # if the color has actually changed
+            if new_color != self.previous_color_value:
+                self.previous_color_value = new_color
+                self.update_led(color=new_color)
+
+        if self.counter == len(self.previous_power_values):
+            time_between_averages = (dt.datetime.now() - self.time_counter).total_seconds()
+            self.time_counter = dt.datetime.now()
+            print('Average power after {} measurements = {} and took {} seconds'.format(
+                len(self.previous_power_values),
+                average_power,
+                time_between_averages
+            ))
 
     def on_hr_data(self, data):
         """ Function runs whenever power data is received """
@@ -371,6 +391,7 @@ if __name__ == '__main__':
         # print('hr channel_opened')
         # Start the node
         monitor.antnode.start()
+        monitor.time_count = dt.datetime.now()
         print('node started')
         while True:
             time.sleep(0.01)
