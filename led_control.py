@@ -395,6 +395,7 @@ if __name__ == '__main__':
         while True:
             time.sleep(0.01)
     except KeyboardInterrupt:
+        leds.change_led_color(color=(0, 0, 0))
         sys.exit(0)
     finally:
         monitor.antnode.stop()
