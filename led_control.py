@@ -391,7 +391,7 @@ if __name__ == '__main__':
         # print('hr channel_opened')
         # Start the node
         monitor.antnode.start()
-        monitor.time_count = dt.datetime.now()
+        monitor.time_counter = dt.datetime.now()
         print('node started')
         while True:
             time.sleep(0.01)
