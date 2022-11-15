@@ -323,7 +323,7 @@ class LEDController:
         # self.strip = Adafruit_NeoPixel(
         #     number_of_leds, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL
         # )
-        self.strip = neopixel.NeoPixel(board.D18, number_of_leds, brightness=1.0)
+        self.strip = neopixel.NeoPixel(board.D18, number_of_leds, bpp=3, brightness=1.0)
         # Initialise the library (must be called once before other functions).
         # self.strip.begin()
         
@@ -361,7 +361,7 @@ class LEDController:
             self.color_set(self, color)
 
         # # Add in 1 second delay here to avoid changing too often
-        # time.sleep(1)
+        time.sleep(0.2)
 
         return None
 
