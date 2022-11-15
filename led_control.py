@@ -359,7 +359,7 @@ class LEDController:
                     time.sleep(0.2)
             # Finally set the color that LED is supposed to be
             # self.color_wipe(color)
-            self.color_set(self, color)
+            self.color_set(color)
 
         # # Add in 1 second delay here to avoid changing too often
         # time.sleep(0.2)
