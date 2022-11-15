@@ -343,11 +343,12 @@ class LEDController:
                 # If set to flash then will set to black and then to the color
                 if flash:
                     # self.color_wipe((0, 0, 0))
-                    self.color_set(color)
-                    time.sleep(0.2)
+                    self.color_set(x)
+                    
                 # Set to the requested color
                 # self.color_wipe(x)
-                self.color_set(self, color)
+                self.color_set(self, x)
+                time.sleep(0.2)
 
         else:
             # Flash LEDS if changing sensor
@@ -361,7 +362,7 @@ class LEDController:
             self.color_set(self, color)
 
         # # Add in 1 second delay here to avoid changing too often
-        time.sleep(0.2)
+        # time.sleep(0.2)
 
         return None
 
