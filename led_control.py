@@ -10,6 +10,10 @@
 """
 import datetime as dt
 import os
+
+import board
+import neopixel
+
 # noinspection PyUnresolvedReferences
 from rpi_ws281x import *
 import argparse
@@ -273,13 +277,13 @@ class Monitor:
                 self.previous_color_value = new_color
                 self.update_led(color=new_color)
 
-                time_between_averages = (dt.datetime.now() - self.time_counter).total_seconds()
-                self.time_counter = dt.datetime.now()
-                print('Average power after {} measurements = {} and took {} seconds'.format(
-                    len(self.previous_power_values),
-                    average_power,
-                    time_between_averages
-                ))
+                # time_between_averages = (dt.datetime.now() - self.time_counter).total_seconds()
+                # self.time_counter = dt.datetime.now()
+                # print('Average power after {} measurements = {} and took {} seconds'.format(
+                #     len(self.previous_power_values),
+                #     average_power,
+                #     time_between_averages
+                # ))
                 self.counter = 0
 
     def on_hr_data(self, data):
@@ -316,11 +320,12 @@ class LEDController:
         
         # Create NeoPixel object with appropriate configuration.
         # noinspection PyUnresolvedReferences
-        self.strip = Adafruit_NeoPixel(
-            number_of_leds, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL
-        )
+        # self.strip = Adafruit_NeoPixel(
+        #     number_of_leds, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL
+        # )
+        self.strip = neopixel.NeoPixel(board.D18, number_of_leds, brightness=1.0)
         # Initialise the library (must be called once before other functions).
-        self.strip.begin()
+        # self.strip.begin()
         
         # Initialise pixels by rotating colors
         self.change_led_color(color=PAIRED_COLOR, flash=True)
@@ -337,23 +342,36 @@ class LEDController:
             for x in color:
                 # If set to flash then will set to black and then to the color
                 if flash:
-                    self.color_wipe((0, 0, 0))
+                    # self.color_wipe((0, 0, 0))
+                    self.color_set(color)
+                    time.sleep(0.2)
                 # Set to the requested color
-                self.color_wipe(x)
+                # self.color_wipe(x)
+                self.color_set(self, color)
 
         else:
             # Flash LEDS if changing sensor
             if flash:
                 for x in range(5):
-                    self.color_wipe(color)
+                    # self.color_wipe(color)
+                    self.color_set(color)
+                    time.sleep(0.2)
             # Finally set the color that LED is supposed to be
-            self.color_wipe(color)
+            # self.color_wipe(color)
+            self.color_set(self, color)
 
-        # Add in 1 second delay here to avoid changing too often
-        time.sleep(1)
+        # # Add in 1 second delay here to avoid changing too often
+        # time.sleep(1)
 
         return None
 
+    def color_set(self, color):
+        """ Change all pixels at the same time """
+        # Convert to RGB
+        self.strip.fill((color[0], color[1], color[2]))
+        
+        return None
+    
     def color_wipe(self, color, wait_ms=5):
         """Wipe color across display a pixel at a time."""
         # Convert to RGB
@@ -399,3 +417,4 @@ if __name__ == '__main__':
         sys.exit(0)
     finally:
         monitor.antnode.stop()
+        leds.strip.deinit()
