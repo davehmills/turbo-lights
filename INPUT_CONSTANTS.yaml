@@ -5,7 +5,7 @@ ANT:
   # Network key as a HEX code into which USB stick is connected
   NETKEY: 'B9A521FBBD72C345'
   # Number of LEDs
-  LEDS: 200
+  LEDS: 95
   # Number of seconds to allow before switching to a different input
   TIME_DELAY: 500
   # Number of seconds to average power values for
