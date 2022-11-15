@@ -5,7 +5,7 @@ ANT:
   # Network key as a HEX code into which USB stick is connected
   NETKEY: 'B9A521FBBD72C345'
   # Number of LEDs
-  LEDS: 30
+  LEDS: 200
   # Number of seconds to allow before switching to a different input
   TIME_DELAY: 500
   # Number of seconds to average power values for
@@ -14,22 +14,22 @@ ANT:
 # Power zones are constructed for each of the ranges provides as a list
 POWER:
   # Zones taken from TrainerRoad based on ftp as shown
-  ftp: 281
+  ftp: 266
   zones:
     # Coasting
     - 0
   # Active
-    - 155
+    - 146
   # Endurance
-    - 214
+    - 202
   # Tempo
-    - 247
+    - 234
   # Sweet Spot
-    - 267
+    - 253
   # Threshold
-    - 298
+    - 282
   # VO2 Max
-    - 340
+    - 322
   # Anaerobic
     - 3000
 
