@@ -347,7 +347,7 @@ class LEDController:
                     
                 # Set to the requested color
                 # self.color_wipe(x)
-                self.color_set(self, x)
+                self.color_set(x)
                 time.sleep(0.2)
 
         else:
@@ -369,7 +369,6 @@ class LEDController:
     def color_set(self, color):
         """ Change all pixels at the same time """
         # Convert to RGB
-        print(color)
         self.strip.fill((int(color[0]), int(color[1]), int(color[2])))
         
         return None
