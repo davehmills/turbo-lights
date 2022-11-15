@@ -368,7 +368,8 @@ class LEDController:
     def color_set(self, color):
         """ Change all pixels at the same time """
         # Convert to RGB
-        self.strip.fill((color[0], color[1], color[2]))
+        print(color)
+        self.strip.fill((int(color[0]), int(color[1]), int(color[2])))
         
         return None
     
@@ -413,7 +414,7 @@ if __name__ == '__main__':
         while True:
             time.sleep(0.01)
     except KeyboardInterrupt:
-        leds.change_led_color(color=(0, 0, 0))
+        leds.strip.deinit()
         sys.exit(0)
     finally:
         monitor.antnode.stop()
