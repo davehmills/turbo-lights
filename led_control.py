@@ -10,15 +10,16 @@
 """
 import datetime as dt
 import os
+import color_setting
 
 import board
+# noinspection PyUnresolvedReferences
 import neopixel
 
 # noinspection PyUnresolvedReferences
 from rpi_ws281x import *
 import argparse
 
-import yaml
 import sys
 import time
 from ant.easy.node import Node
@@ -45,100 +46,6 @@ LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
 LED_INVERT = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
-
-def get_zones(pth_file, power=True):
-    """
-        Script imports the zones to consider for heart rate or power
-    :param str pth_file:  Path to the YAML file that contains the zones
-    :param bool power:  Whether power or heart rates zones are being considered (optional=True)
-    :return list zones:  Returns a list showing the zones which should be considered
-    """
-    # Import the yaml file
-    with open(pth_file, 'r') as f:
-        file_contents: dict = yaml.safe_load(f)
-
-    # Determine either the heart rate or power data, converting to float if needed
-    if power:
-        zones_to_process = file_contents['POWER']['zones']
-    else:
-        zones_to_process = file_contents['HEART RATE']['zones']
-
-    # Convert all items into a integer
-    zones = [int(x) for x in zones_to_process]
-    return zones
-
-
-def get_ant_constants(pth_file):
-    """
-        Retrieves all the constants associated with detecting ANT input changes
-    :param str pth_file:  YAML file which contains input constants
-    :return dict ant_constants:  Dictionary of inputs
-    """
-    # Import the yaml file
-    with open(pth_file, 'r') as f:
-        file_contents: dict = yaml.safe_load(f)
-
-    # Extract constants from YAML file
-    serial = file_contents['ANT']['SERIAL']
-    # Netkey
-    netkey = file_contents['ANT']['NETKEY']
-    # LEDS requires conversion to integer
-    number_leds = int(file_contents['ANT']['LEDS'])
-    # time delay requires conversion to int
-    time_delay = int(file_contents['ANT']['TIME_DELAY'])
-    # Number of seconds to sample power data
-    number_of_seconds = int(file_contents['ANT']['POWER_AVERAGING'])
-
-    # Convert to dictionary
-    ant_constants = dict()
-    ant_constants['SERIAL'] = serial
-    ant_constants['NETKEY'] = netkey
-    ant_constants['LEDS'] = number_leds
-    ant_constants['TIME_DELAY'] = time_delay
-
-    # TODO: Need to convert this input into number of values based on sampling rate (frequency)
-    ant_constants['NUMBER_POWER_VALUES'] = number_of_seconds
-
-    return ant_constants
-
-
-def get_zone_colormapping(zones):
-    """
-        Colors to use for each zone, based on: https://zwiftinsider.com/power-zone-colors/
-        Align the colors with the zones such that there is a lookup dictionary for each heart rate zone determining
-            the color that should be set
-    :param list zones:
-    :return dict color_zones:  Dictionary of zones to colors
-    """
-
-    # Grey
-    z1 = (132, 132, 130)
-    # Blue
-    z2 = (0, 0, 255)
-    # Green
-    z3 = (0, 204, 34)
-    # Yellow
-    z4 = (255, 255, 0)
-    # Orange
-    z5 = (255, 128, 0)
-    # Red
-    z6 = (255, 0, 0)
-    # Purple - Required an extra color due to number of zones
-    z7 = (251, 3, 201)
-    # Combine into a single set
-    colormapping = (z1, z2, z3, z4, z5, z6, z7)
-
-    color_zones = dict()
-    # Loop through each entry in the zones and set the corresponding color (except the last one)
-    for i, zone_value in enumerate(zones[:-1]):
-        # Define a new dictionary
-        temp_color_zones = {x: colormapping[i] for x in range(zone_value, zones[i+1])}
-        # Combine into dictionary
-        color_zones.update(temp_color_zones)
-
-    return color_zones
-
-
 # Class for ANT+ data
 class Monitor:
     """ Detecting Heart Rate Monitor values """
@@ -154,7 +61,7 @@ class Monitor:
             Initialise the class for managing the heart rate monitor
         :param str serial:  Serial string of ANT_USB stick, provided as external config file
         :param list netkey:  Hexadecimal number for the ANT stick
-        :param function led_controller:  Function which device is passed
+        :param instance led_controller:  Function which device is passed
         :param int time_delay:  Maximum delay to allow before toggling input
         :param int number_measurements_to_average:  Number of individual measurements to average
         """
@@ -178,11 +85,15 @@ class Monitor:
         self.counter = 0
 
         # Get the relevant zones and color mapping
-        zones_power = get_zones(pth_file=PTH_CONSTANTS_FILE, power=True)
-        zones_hr = get_zones(pth_file=PTH_CONSTANTS_FILE, power=False)
+        zones_power = color_setting.get_zones(pth_file=PTH_CONSTANTS_FILE, power=True)
+        zones_hr = color_setting.get_zones(pth_file=PTH_CONSTANTS_FILE, power=False)
         # Get colors for zones
-        self.colormapping_power = get_zone_colormapping(zones=zones_power)
-        self.colormapping_hr = get_zone_colormapping(zones=zones_hr)
+        self.colormapping_power = color_setting.get_zone_colormapping(
+            zones=zones_power, number_of_leds=self.update_led.number_leds
+        )
+        self.colormapping_hr = color_setting.get_zone_colormapping(
+            zones=zones_hr, number_of_leds=self.update_led.number_leds
+        )
 
         # Holders for previous power values
         self.previous_power_values = [0]*number_measurements_to_average
@@ -260,9 +171,8 @@ class Monitor:
         del self.previous_power_values[0]
         self.previous_power_values.append(new_power_value)
 
-        # # Calculate average
+        # # Calculate average and determine new color
         average_power = int(sum(self.previous_power_values) / len(self.previous_power_values))
-
         new_color = self.colormapping_power[average_power]
 
         # Transfer to using power data if not already
@@ -275,15 +185,8 @@ class Monitor:
             # if the color has actually changed
             if new_color != self.previous_color_value:
                 self.previous_color_value = new_color
-                self.update_led(color=new_color)
+                self.update_led.change_led_color(color=new_color)
 
-                # time_between_averages = (dt.datetime.now() - self.time_counter).total_seconds()
-                # self.time_counter = dt.datetime.now()
-                # print('Average power after {} measurements = {} and took {} seconds'.format(
-                #     len(self.previous_power_values),
-                #     average_power,
-                #     time_between_averages
-                # ))
                 self.counter = 0
 
     def on_hr_data(self, data):
@@ -301,7 +204,7 @@ class Monitor:
         # If power data hasn't been updated in a while, transfer to hr data
         if self.power:
             if (self.hr_last_update - self.power_last_update).total_seconds() > self.time_delay:
-                self.update_led(color=color, flash=True)
+                self.update_led.change_led_color(color=color, flash=True)
                 self.power = False
         else:
             self.update_led(color=color)
@@ -317,18 +220,30 @@ class LEDController:
         parser = argparse.ArgumentParser()
         parser.add_argument('-c', '--clear', action='store_true', help='clear the display on exit')
         _ = parser.parse_args()
+
+        # Number of leds being controlled
+        self.number_leds = number_of_leds
         
         # Create NeoPixel object with appropriate configuration.
         # noinspection PyUnresolvedReferences
-        # self.strip = Adafruit_NeoPixel(
-        #     number_of_leds, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL
-        # )
         self.strip = neopixel.NeoPixel(board.D18, number_of_leds, bpp=3, brightness=1.0)
-        # Initialise the library (must be called once before other functions).
-        # self.strip.begin()
-        
+
         # Initialise pixels by rotating colors
         self.change_led_color(color=PAIRED_COLOR, flash=True)
+
+    def set_power_color(self, setting):
+        """
+            Specifies the color and number of leds to set
+        :param tuple setting:
+        :return:
+        """
+        # Extract settings
+        color1 = setting[0][1]
+        color2 = setting[1][1]
+        leds1 = setting[0][0]
+        leds2 = setting[1][0]
+
+        # TODO: Figure out how to write specific LEDS for a color
 
     def change_led_color(self, color, flash=False):
         """
@@ -372,20 +287,11 @@ class LEDController:
         self.strip.fill((int(color[0]), int(color[1]), int(color[2])))
         
         return None
-    
-    def color_wipe(self, color, wait_ms=5):
-        """Wipe color across display a pixel at a time."""
-        # Convert to RGB
-        color = Color(color[0], color[1], color[2])
-        
-        for i in range(self.strip.numPixels()):
-            self.strip.setPixelColor(i, color)
-            self.strip.show()
 
 
 if __name__ == '__main__':
     # Get constants
-    ant_settings = get_ant_constants(pth_file=PTH_CONSTANTS_FILE)
+    ant_settings = color_setting.get_ant_constants(pth_file=PTH_CONSTANTS_FILE)
 
     # Setup LEDs
     leds = LEDController(ant_settings['LEDS'])
@@ -394,7 +300,7 @@ if __name__ == '__main__':
     monitor = Monitor(
         serial=ant_settings['SERIAL'],
         netkey=[0xB9, 0xA5, 0x21, 0xFB, 0xBD, 0x72, 0xC3, 0x45],
-        led_controller=leds.change_led_color,
+        led_controller=leds,
         time_delay=ant_settings['TIME_DELAY'],
         number_measurements_to_average=ant_settings['NUMBER_POWER_VALUES']
     )

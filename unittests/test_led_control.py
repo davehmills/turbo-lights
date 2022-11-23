@@ -1,7 +1,7 @@
 import unittest
 import os
 
-import led_control
+import color_setting
 
 
 test_data_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'test_data')
@@ -14,7 +14,7 @@ class TestYAMLImportZones(unittest.TestCase):
 
     def test_power_zone_import(self):
         """ Test importing of power zone data """
-        zones = led_control.get_zones(pth_file=self.pth_test_file)
+        zones = color_setting.get_zones(pth_file=self.pth_test_file)
 
         # Confirm some specific attributes
         self.assertEqual(len(zones), 8)
@@ -23,7 +23,7 @@ class TestYAMLImportZones(unittest.TestCase):
 
     def test_heart_rate_zone_import(self):
         """ Test importing of heart rate zone data """
-        zones = led_control.get_zones(pth_file=self.pth_test_file, power=False)
+        zones = color_setting.get_zones(pth_file=self.pth_test_file, power=False)
 
         # Confirm some specific attributes
         self.assertEqual(len(zones), 8)
@@ -33,7 +33,7 @@ class TestYAMLImportZones(unittest.TestCase):
     def test_file_missing(self):
         """ Tests running correctly if file is missing """
         with self.assertRaises(FileNotFoundError):
-            led_control.get_zones(pth_file='Missing file')
+            color_setting.get_zones(pth_file='Missing file')
 
 
 class TestYAMLImportANTConstants(unittest.TestCase):
@@ -43,7 +43,7 @@ class TestYAMLImportANTConstants(unittest.TestCase):
 
     def test_ant_constants(self):
         """ Test importing of power zone data """
-        ant_constants = led_control.get_ant_constants(pth_file=self.pth_test_file)
+        ant_constants = color_setting.get_ant_constants(pth_file=self.pth_test_file)
 
         # Confirm some specific attributes
         self.assertEqual(len(ant_constants), 2)
@@ -52,7 +52,7 @@ class TestYAMLImportANTConstants(unittest.TestCase):
     def test_file_missing(self):
         """ Tests running correctly if file is missing """
         with self.assertRaises(FileNotFoundError):
-            led_control.get_ant_constants(pth_file='Missing file')
+            color_setting.get_ant_constants(pth_file='Missing file')
 
 
 class HeartRateColorZones(unittest.TestCase):
@@ -64,7 +64,7 @@ class HeartRateColorZones(unittest.TestCase):
     def test_hr_zone_colormapping(self):
         """ Test importing of power zone data """
         test_zones = self.zones_hr
-        zone_colormapping = led_control.get_zone_colormapping(zones=test_zones)
+        zone_colormapping = color_setting.get_zone_colormapping(zones=test_zones)
 
         # Confirm some specific attributes
         self.assertEqual(len(zone_colormapping), max(test_zones))
@@ -74,7 +74,7 @@ class HeartRateColorZones(unittest.TestCase):
     def test_power_zone_colormapping(self):
         """ Test importing of power zone data """
         test_zones = self.zones_power
-        zone_colormapping = led_control.get_zone_colormapping(zones=test_zones)
+        zone_colormapping = color_setting.get_zone_colormapping(zones=test_zones, number_of_leds=100)
 
         # Confirm some specific attributes
         self.assertEqual(len(zone_colormapping), max(test_zones))
