@@ -247,7 +247,6 @@ class LEDController:
         # Set leds to the appropriate color
         print('leds1 = ' + str(leds1) + ' and color1 = ' + str(color1))
         print('leds2 = ' + str(leds2) + ' and color2 = ' + str(color2))
-        print(self.strip.keys())
         for led_no in range(self.number_leds):
             if led_no <= leds1:
                 color = color1
