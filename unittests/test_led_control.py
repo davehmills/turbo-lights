@@ -71,7 +71,7 @@ class HeartRateColorZones(unittest.TestCase):
         self.assertEqual(min(zone_colormapping.keys()), min(test_zones))
         self.assertEqual(max(zone_colormapping.keys()), max(test_zones) - 1)
         # Confirm the LED setting values are correct
-        self.assertEqual(zone_colormapping[0][0][0], 100)
+        self.assertEqual(zone_colormapping[0][0][0], 99)
         self.assertEqual(zone_colormapping[0][1][0], 0)
 
     def test_power_zone_colormapping(self):
@@ -84,7 +84,7 @@ class HeartRateColorZones(unittest.TestCase):
         self.assertEqual(min(zone_colormapping.keys()), min(test_zones))
         self.assertEqual(max(zone_colormapping.keys()), max(test_zones) - 1)
         # Confirm the LED setting values are correct
-        self.assertEqual(zone_colormapping[0][0][0], 100)
+        self.assertEqual(zone_colormapping[0][0][0], 99)
         self.assertEqual(zone_colormapping[0][1][0], 0)
 
         setting = zone_colormapping[0]

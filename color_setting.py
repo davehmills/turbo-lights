@@ -119,12 +119,12 @@ def get_zone_colormapping(zones, number_of_leds):
     for i, zone_value in enumerate(zones[:-1]):
         # Calculate power change / led
         # -1 to account for location rather than number
-        led_step = (number_of_leds-1) / (zones[i+1] - zones[i])
+        led_step = number_of_leds / (zones[i+1] - zones[i])
 
         # Define a new dictionary
         temp_color_zones = {
             x: (
-                (number_of_leds - math.floor((x - zones[i]) * led_step), colormapping[i]),
+                ((number_of_leds-1) - math.floor((x - zones[i]) * led_step), colormapping[i]),
                 (math.floor((x - zones[i]) * led_step), colormapping[i+1])
             ) for x in range(zone_value, zones[i+1])}
         # Combine into dictionary
