@@ -248,15 +248,21 @@ class LEDController:
         print('leds1 = ' + str(leds1) + ' and color1 = ' + str(color1))
         print('leds2 = ' + str(leds2) + ' and color2 = ' + str(color2))
         print(self.strip.keys())
-        self.strip[:leds1] = color1
-        self.strip[leds1:] = color2
+        for led_no in range(self.number_leds):
+            if led_no <= leds1:
+                color = color1
+            else:
+                color = color2
+            self.strip[led_no] = color
+        # self.strip[:leds1] = color1
+        # self.strip[leds1:] = color2
 
-        if flash:
-            for x in range(10):
-                self.strip.fill((0, 0, 0))
-                time.sleep(0.05)
-                self.strip[:leds1] = color1
-                self.strip[leds2:] = color2
+        # if flash:
+        #     for x in range(10):
+        #         self.strip.fill((0, 0, 0))
+        #         time.sleep(0.05)
+        #         self.strip[:leds1] = color1
+        #         self.strip[leds2:] = color2
 
         return None
 
@@ -273,9 +279,11 @@ class LEDController:
                 self.strip[led_no] = color
                 time.sleep(0.05)
                 if led_no > 10:
-                    self.strip[:10] = (10, 10, 10)
+                    for x in range(10):
+                        self.strip[x] = (10, 10, 10)
                 else:
-                    self.strip[10:20] = (10, 10, 10)
+                    for x in range(10, 20):
+                        self.strip[x] = (10, 10, 10)
                 time.sleep(0.01)
             time.sleep(0.5)
             self.strip.fill((0, 0, 0))
