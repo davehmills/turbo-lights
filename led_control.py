@@ -163,19 +163,19 @@ class Monitor:
         """ Function runs whenever power data is received """
         # Store the time power data was last updated
         self.power_last_update = dt.datetime.now()
-        self.counter += 1
+        # self.counter += 1
 
         # Get power data and relevant color
         new_power_value = data[6]
 
         # Add to rolling average store
         # Remove last value and add new value to rolling average store
-        del self.previous_power_values[0]
-        self.previous_power_values.append(new_power_value)
+        # del self.previous_power_values[0]
+        # self.previous_power_values.append(new_power_value)
 
         # # Calculate average and determine new color
-        average_power = int(sum(self.previous_power_values) / len(self.previous_power_values))
-        new_color = self.colormapping_power[average_power]
+        # average_power = int(sum(self.previous_power_values) / len(self.previous_power_values))
+        new_color = self.colormapping_power[new_power_value]
 
         # Transfer to using power data if not already
         if not self.power:
@@ -190,7 +190,7 @@ class Monitor:
                 self.update_led.set_led_color_range(new_color)
                 # self.update_led.change_led_color(color=new_color)
 
-                self.counter = 0
+                # self.counter = 0
 
     def on_hr_data(self, data):
         """ Function runs whenever power data is received """
@@ -229,24 +229,23 @@ class LEDController:
         self.strip = neopixel.NeoPixel(board.D18, number_of_leds, bpp=3, brightness=1.0)
 
         # Initialise pixels by rotating colors
-        self.change_led_color(color_range=PAIRED_COLOR, flash=True)
+        self.change_led_color(color_range=PAIRED_COLOR)
 
-    def set_led_color_range(self, setting, flash=False):
+    def set_led_color_range(self, setting):
         """
             Specifies the color and number of leds to set
         :param tuple setting:
-        :param bool flash:  If set to True then will flash the leds 10 times with the same setting
         :return:
         """
         # Extract settings
         color1 = setting[0][1]
         color2 = setting[1][1]
         leds1 = setting[0][0]
-        leds2 = setting[1][0]
+        # leds2 = setting[1][0]
 
         # Set leds to the appropriate color
-        print('leds1 = ' + str(leds1) + ' and color1 = ' + str(color1))
-        print('leds2 = ' + str(leds2) + ' and color2 = ' + str(color2))
+        # print('leds1 = ' + str(leds1) + ' and color1 = ' + str(color1))
+        # print('leds2 = ' + str(leds2) + ' and color2 = ' + str(color2))
         for led_no in range(self.number_leds):
             if led_no <= leds1:
                 color = color1
@@ -265,11 +264,10 @@ class LEDController:
 
         return None
 
-    def change_led_color(self, color_range, flash=False):
+    def change_led_color(self, color_range):
         """
             Change the color of the LED to that provided as an input value
         :param tuple color_range:  List of RGB colors to set
-        :param bool flash:  Will flash the LEDs if there is a change in the device that is being connected to
         :return None:
         """
         # Iterate through each LED with a 0.5second delay
@@ -277,7 +275,6 @@ class LEDController:
             for led_no in range(self.number_leds):
                 self.strip[led_no] = color
             self.strip.fill((0, 0, 0))
-            time.sleep(0.2)
             self.strip.fill(color)
         #
         #
@@ -312,12 +309,12 @@ class LEDController:
 
         return None
 
-    def color_set(self, color):
-        """ Change all pixels at the same time """
-        # Convert to RGB
-        self.strip.fill((int(color[0]), int(color[1]), int(color[2])))
-        
-        return None
+    # def color_set(self, color):
+    #     """ Change all pixels at the same time """
+    #     # Convert to RGB
+    #     self.strip.fill((int(color[0]), int(color[1]), int(color[2])))
+    #
+    #     return None
 
 
 if __name__ == '__main__':
@@ -351,7 +348,7 @@ if __name__ == '__main__':
         while True:
             time.sleep(0.01)
     except KeyboardInterrupt:
-        leds.strip.deinit()
+        # leds.strip.deinit()
         sys.exit(0)
     finally:
         monitor.antnode.stop()
