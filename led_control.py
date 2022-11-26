@@ -247,8 +247,8 @@ class LEDController:
         # Set leds to the appropriate color
         print('leds1 = ' + str(leds1) + ' and color1 = ' + str(color1))
         print('leds2 = ' + str(leds2) + ' and color2 = ' + str(color2))
-        self.strip[:leds1] = color1
-        self.strip[leds2:] = color2
+        self.strip[:leds1] = (color1[0], color1[1], color1[2], 0)
+        self.strip[leds2:] = (color2[0], color2[1], color2[2], 0)
 
         if flash:
             for x in range(10):
