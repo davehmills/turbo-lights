@@ -245,6 +245,8 @@ class LEDController:
         leds2 = setting[1][0]
 
         # Set leds to the appropriate color
+        print('leds1 = ' + str(leds1) + ' and color1 = ' + str(color1))
+        print('leds2 = ' + str(leds2) + ' and color2 = ' + str(color2))
         self.strip[:leds1] = color1
         self.strip[leds2:] = color2
 

@@ -87,6 +87,18 @@ class HeartRateColorZones(unittest.TestCase):
         self.assertEqual(zone_colormapping[0][0][0], 100)
         self.assertEqual(zone_colormapping[0][1][0], 0)
 
+        setting = zone_colormapping[0]
+        # Extract settings
+        color1 = setting[0][1]
+        color2 = setting[1][1]
+        leds1 = setting[0][0]
+        leds2 = setting[1][0]
+
+        # Set leds to the appropriate color
+        print('leds1 = ' + str(leds1) + ' and color1 = ' + str(color1))
+        print('leds2 = ' + str(leds2) + ' and color2 = ' + str(color2))
+
+
 
 if __name__ == '__main__':
     unittest.main()
