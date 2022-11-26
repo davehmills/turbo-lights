@@ -64,12 +64,15 @@ class HeartRateColorZones(unittest.TestCase):
     def test_hr_zone_colormapping(self):
         """ Test importing of power zone data """
         test_zones = self.zones_hr
-        zone_colormapping = color_setting.get_zone_colormapping(zones=test_zones)
+        zone_colormapping = color_setting.get_zone_colormapping(zones=test_zones, number_of_leds=100)
 
         # Confirm some specific attributes
         self.assertEqual(len(zone_colormapping), max(test_zones))
         self.assertEqual(min(zone_colormapping.keys()), min(test_zones))
         self.assertEqual(max(zone_colormapping.keys()), max(test_zones) - 1)
+        # Confirm the LED setting values are correct
+        self.assertEqual(zone_colormapping[0][0][0], 100)
+        self.assertEqual(zone_colormapping[0][1][0], 0)
 
     def test_power_zone_colormapping(self):
         """ Test importing of power zone data """
@@ -80,6 +83,9 @@ class HeartRateColorZones(unittest.TestCase):
         self.assertEqual(len(zone_colormapping), max(test_zones))
         self.assertEqual(min(zone_colormapping.keys()), min(test_zones))
         self.assertEqual(max(zone_colormapping.keys()), max(test_zones) - 1)
+        # Confirm the LED setting values are correct
+        self.assertEqual(zone_colormapping[0][0][0], 100)
+        self.assertEqual(zone_colormapping[0][1][0], 0)
 
 
 if __name__ == '__main__':

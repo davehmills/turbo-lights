@@ -130,16 +130,3 @@ def get_zone_colormapping(zones, number_of_leds):
         color_zones.update(temp_color_zones)
 
     return color_zones
-
-
-def number_of_leds_calc(value, limits):
-    """
-        Calculated the number of LEDS that need to be set the upper color and how many the lower color
-    :param int value: Value (power or HR) to consider
-    :param tuple limits:  Upper and lower limits to consider
-    :return int number_of_leds:  Number of LEDS to set to the upper color
-    """
-
-    # Using min and max to find closest value in list
-    lower_value = limits[min(range(len(limits)), key=lambda i: abs(limits[i]-value))]
-    upper_value = limits[max(range(len(limits)), key=lambda i: abs(limits[i]-value))]

@@ -1,3 +1,7 @@
-pyyaml
-ant
-neopixel
+pyyaml~=6.0
+ant~=0.1.1
+neopixel~=0.0.1
+pyserial~=3.5
+setuptools~=57.0.0
+msgpack-python~=0.5.6
+six~=1.16.0

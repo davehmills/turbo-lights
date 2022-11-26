@@ -12,6 +12,7 @@ import datetime as dt
 import os
 import color_setting
 
+# noinspection PyPackageRequirements
 import board
 # noinspection PyUnresolvedReferences
 import neopixel
@@ -45,6 +46,7 @@ LED_DMA = 10      # DMA channel to use for generating signal (try 10)
 LED_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
 LED_INVERT = False   # True to invert the signal (when using NPN transistor level shift)
 LED_CHANNEL = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
+
 
 # Class for ANT+ data
 class Monitor:
@@ -178,23 +180,21 @@ class Monitor:
         # Transfer to using power data if not already
         if not self.power:
             self.power = True
-            self.update_led(color=new_color, flash=True)
+            self.update_led.set_led_color_range(color=new_color, flash=True)
             self.previous_color_value = new_color
         else:
             # Check whether the color has actually changed and only update the LEDs
             # if the color has actually changed
             if new_color != self.previous_color_value:
                 self.previous_color_value = new_color
-                self.update_led.change_led_color(color=new_color)
+                self.update_led.set_led_color_range(new_color)
+                # self.update_led.change_led_color(color=new_color)
 
                 self.counter = 0
 
     def on_hr_data(self, data):
         """ Function runs whenever power data is received """
         # Get hr data and transfer to relevant color
-        print('HR Data')
-        print(data)
-        
         data_value = int(data[7])
         color = self.colormapping_hr[data_value]
 
@@ -204,7 +204,7 @@ class Monitor:
         # If power data hasn't been updated in a while, transfer to hr data
         if self.power:
             if (self.hr_last_update - self.power_last_update).total_seconds() > self.time_delay:
-                self.update_led.change_led_color(color=color, flash=True)
+                self.update_led.set_led_color_range(color=color, flash=True)
                 self.power = False
         else:
             self.update_led(color=color)
@@ -231,10 +231,11 @@ class LEDController:
         # Initialise pixels by rotating colors
         self.change_led_color(color=PAIRED_COLOR, flash=True)
 
-    def set_power_color(self, setting):
+    def set_led_color_range(self, setting, flash=False):
         """
             Specifies the color and number of leds to set
         :param tuple setting:
+        :param bool flash:  If set to True then will flash the leds 10 times with the same setting
         :return:
         """
         # Extract settings
@@ -243,7 +244,18 @@ class LEDController:
         leds1 = setting[0][0]
         leds2 = setting[1][0]
 
-        # TODO: Figure out how to write specific LEDS for a color
+        # Set leds to the appropriate color
+        self.strip[:leds1] = color1
+        self.strip[leds2:] = color2
+
+        if flash:
+            for x in range(10):
+                self.strip.fill((0, 0, 0))
+                time.sleep(0.05)
+                self.strip[:leds1] = color1
+                self.strip[leds2:] = color2
+
+        return None
 
     def change_led_color(self, color, flash=False):
         """
@@ -263,7 +275,7 @@ class LEDController:
                 # Set to the requested color
                 # self.color_wipe(x)
                 self.color_set(x)
-                time.sleep(0.2)
+                # time.sleep(0.2)
 
         else:
             # Flash LEDS if changing sensor
@@ -271,7 +283,7 @@ class LEDController:
                 for x in range(5):
                     # self.color_wipe(color)
                     self.color_set(color)
-                    time.sleep(0.2)
+                    # time.sleep(0.2)
             # Finally set the color that LED is supposed to be
             # self.color_wipe(color)
             self.color_set(color)
