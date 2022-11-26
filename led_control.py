@@ -229,7 +229,7 @@ class LEDController:
         self.strip = neopixel.NeoPixel(board.D18, number_of_leds, bpp=3, brightness=1.0)
 
         # Initialise pixels by rotating colors
-        self.change_led_color(color=PAIRED_COLOR, flash=True)
+        self.change_led_color(color_range=PAIRED_COLOR, flash=True)
 
     def set_led_color_range(self, setting, flash=False):
         """
@@ -247,8 +247,9 @@ class LEDController:
         # Set leds to the appropriate color
         print('leds1 = ' + str(leds1) + ' and color1 = ' + str(color1))
         print('leds2 = ' + str(leds2) + ' and color2 = ' + str(color2))
-        self.strip[:leds1] = (color1[0], color1[1], color1[2], 0)
-        self.strip[leds2:] = (color2[0], color2[1], color2[2], 0)
+        print(self.strip.keys())
+        self.strip[:leds1] = color1
+        self.strip[leds1:] = color2
 
         if flash:
             for x in range(10):
@@ -259,39 +260,57 @@ class LEDController:
 
         return None
 
-    def change_led_color(self, color, flash=False):
+    def change_led_color(self, color_range, flash=False):
         """
             Change the color of the LED to that provided as an input value
-        :param tuple color:  RGB color to set the LED to
+        :param tuple color_range:  List of RGB colors to set
         :param bool flash:  Will flash the LEDs if there is a change in the device that is being connected to
         :return None:
-        """      
-        # Determine whether color is a single value or a list
-        if len(color) > 3:
-            for x in color:
-                # If set to flash then will set to black and then to the color
-                if flash:
-                    # self.color_wipe((0, 0, 0))
-                    self.color_set(x)
-                    
-                # Set to the requested color
-                # self.color_wipe(x)
-                self.color_set(x)
-                # time.sleep(0.2)
-
-        else:
-            # Flash LEDS if changing sensor
-            if flash:
-                for x in range(5):
-                    # self.color_wipe(color)
-                    self.color_set(color)
-                    # time.sleep(0.2)
-            # Finally set the color that LED is supposed to be
-            # self.color_wipe(color)
-            self.color_set(color)
-
-        # # Add in 1 second delay here to avoid changing too often
-        # time.sleep(0.2)
+        """
+        # Iterate through each LED with a 0.5second delay
+        for color in color_range:
+            for led_no in range(self.number_leds):
+                self.strip[led_no] = color
+                time.sleep(0.05)
+                if led_no > 10:
+                    self.strip[:10] = (10, 10, 10)
+                else:
+                    self.strip[10:20] = (10, 10, 10)
+                time.sleep(0.01)
+            time.sleep(0.5)
+            self.strip.fill((0, 0, 0))
+            time.sleep(1)
+            self.strip.fill(color)
+        #
+        #
+        #
+        #
+        # # Determine whether color is a single value or a list
+        # if len(color) > 3:
+        #     for x in color:
+        #         # If set to flash then will set to black and then to the color
+        #         if flash:
+        #             # self.color_wipe((0, 0, 0))
+        #             self.color_set(x)
+        #
+        #         # Set to the requested color
+        #         # self.color_wipe(x)
+        #         self.color_set(x)
+        #         # time.sleep(0.2)
+        #
+        # else:
+        #     # Flash LEDS if changing sensor
+        #     if flash:
+        #         for x in range(5):
+        #             # self.color_wipe(color)
+        #             self.color_set(color)
+        #             # time.sleep(0.2)
+        #     # Finally set the color that LED is supposed to be
+        #     # self.color_wipe(color)
+        #     self.color_set(color)
+        #
+        # # # Add in 1 second delay here to avoid changing too often
+        # # time.sleep(0.2)
 
         return None
 
